@@ -7,6 +7,7 @@ import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression
 import org.codehaus.groovy.ast.expr.DeclarationExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
@@ -25,19 +26,6 @@ import java.lang.reflect.Modifier
 
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class MyAstTransformation implements ASTTransformation {
-    private class WatWutObject {
-        private class WutWatObject {
-            public wutWat() {
-                println "Calling method on returned object"
-            }
-        }
-
-        public watWut() {
-            println "Creating first inner object"
-            return new WutWatObject()
-        }
-    }
-
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
         if (!(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof MethodNode)) {
@@ -47,49 +35,30 @@ class MyAstTransformation implements ASTTransformation {
         AnnotationNode annotation = (AnnotationNode)nodes[0]
         MethodNode method = (MethodNode)nodes[1]
 
-        String watWutObjectFieldName = "watWutInternalTestingField"
-        String contextVariableName = "watWutReturnValueLocalVariableName"
-        String originalMethodName = "_watWutNameOfOriginalMethod_${method.name}"
-
-        method.declaringClass.addMethod(
-            new MethodNode(originalMethodName, Modifier.PRIVATE, method.returnType, method.parameters, method.exceptions, method.code)
-        )
-
         method.declaringClass.addField(
             new FieldNode(
-                watWutObjectFieldName,
+                "myField",
                 Modifier.PRIVATE,
-                new ClassNode(WatWutObject.class),
+                new ClassNode(String.class),
                 new ClassNode(method.declaringClass.getClass()),
-                new ConstructorCallExpression(new ClassNode(WatWutObject.class), new ArgumentListExpression())
+                new ConstantExpression("I am a field!")
             )
         )
 
         ExpressionStatement contextAssignmentExpression = new ExpressionStatement(
             new DeclarationExpression(
-                new VariableExpression(contextVariableName),
+                new VariableExpression("myLocalVariable"),
                 Token.newSymbol(Types.EQUAL, 0, 0),
-                new MethodCallExpression(new VariableExpression(watWutObjectFieldName), "watWut", new ArgumentListExpression())
-            )
-        )
-
-        ExpressionStatement callOriginalMethod = new ExpressionStatement(
-            new MethodCallExpression(
-                new VariableExpression("this"),
-                originalMethodName,
-                new ArgumentListExpression()
-            )
-        )
-
-        ExpressionStatement contextStopExpression = new ExpressionStatement(
-            new MethodCallExpression(
-                new VariableExpression(contextVariableName), "wutWat", new ArgumentListExpression()
+                new MethodCallExpression(
+                    new VariableExpression("myField"),
+                    "getConfig",
+                    new ArgumentListExpression()
+                )
             )
         )
 
         BlockStatement newMethod = new BlockStatement([], new VariableScope())
         newMethod.statements.add(contextAssignmentExpression)
-        newMethod.statements.add(new TryCatchStatement(callOriginalMethod, contextStopExpression))
         method.code = newMethod
     }
 }
