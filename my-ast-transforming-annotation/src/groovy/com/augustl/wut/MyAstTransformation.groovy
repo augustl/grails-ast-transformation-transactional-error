@@ -2,7 +2,6 @@ package com.augustl.wut
 
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
@@ -60,9 +59,9 @@ class MyAstTransformation implements ASTTransformation {
             new FieldNode(
                 watWutObjectFieldName,
                 Modifier.PRIVATE,
-                new ClassNode(WatWutObject.class),
-                new ClassNode(method.declaringClass.getClass()),
-                new ConstructorCallExpression(new ClassNode(WatWutObject.class), new ArgumentListExpression())
+                ClassHelper.make(WatWutObject),
+                method.declaringClass,
+                new ConstructorCallExpression(ClassHelper.make(WatWutObject), new ArgumentListExpression())
             )
         )
 
