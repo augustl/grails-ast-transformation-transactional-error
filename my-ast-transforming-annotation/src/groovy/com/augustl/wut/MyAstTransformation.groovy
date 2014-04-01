@@ -3,6 +3,7 @@ package com.augustl.wut
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.VariableScope
@@ -69,7 +70,7 @@ class MyAstTransformation implements ASTTransformation {
             new DeclarationExpression(
                 new VariableExpression(contextVariableName),
                 Token.newSymbol(Types.EQUAL, 0, 0),
-                new MethodCallExpression(new VariableExpression(watWutObjectFieldName), "watWut", new ArgumentListExpression())
+                new MethodCallExpression(new VariableExpression(watWutObjectFieldName, ClassHelper.make(WatWutObject)), "watWut", new ArgumentListExpression())
             )
         )
 
@@ -83,7 +84,7 @@ class MyAstTransformation implements ASTTransformation {
 
         ExpressionStatement contextStopExpression = new ExpressionStatement(
             new MethodCallExpression(
-                new VariableExpression(contextVariableName), "wutWat", new ArgumentListExpression()
+                new VariableExpression(contextVariableName, ClassHelper.make(WatWutObject.WutWatObject)), "wutWat", new ArgumentListExpression()
             )
         )
 
